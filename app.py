@@ -65,11 +65,11 @@ class UpdateUser(Resource):
 
         data = request.get_json()
         if "user_id" in data or "password" in data:
-            return {"message": "User update failed", "cause": "Cannot change user_id or password"}, 400
+            return {"message": "User update failed", "cause": "Not updateble user_id and password"}, 400
 
         if "nickname" in data:
             if not (1 <= len(data["nickname"]) <= 30):  
-                return {"message": "User update failed", "cause": "Invalid nickname"}, 400
+                return {"message": "User update failed", "cause": "Invalid nickname or comment"}, 400
             users[user_id]["nickname"] = data["nickname"]
         if "comment" in data:
             if not (0 <= len(data["comment"]) <= 100):  
