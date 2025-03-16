@@ -88,7 +88,7 @@ class DeleteUser(Resource):
             return {"message": "User not found"}, 404
 
         del users[auth_user]
-        return {"message": "Account and user data deleted"}, 200
+        return {"message": "Account and user successfully removed"}, 200
 
 
 api.add_resource(SignUp, "/signup")
