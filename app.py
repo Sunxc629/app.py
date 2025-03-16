@@ -30,9 +30,9 @@ class SignUp(Resource):
         if not user_id or not password:
             return {"message": "Account creation failed", "cause": "Required user_id and password"}, 400
         if not (6 <= len(user_id) <= 20 and re.match(r"^[A-Za-z0-9]+$", user_id)):
-            return {"message": "Account creation failed", "cause": "Invalid user_id"}, 400
+            return {"message": "Account creation failed", "cause": "Input length is incorrect"}, 400
         if not (8 <= len(password) <= 20 and re.match(r"^[A-Za-z0-9!@#$%^&*()_+=-]+$", password)):
-            return {"message": "Account creation failed", "cause": "Invalid password"}, 400
+            return {"message": "Account creation failed", "cause": "Incorrect character pattern"}, 400
         if user_id in users:
             return {"message": "Account creation failed", "cause": "Already same user_id is used"}, 400
         users[user_id] = {"password": password, "nickname": nickname, "comment": comment}
