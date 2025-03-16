@@ -5,6 +5,7 @@ import re
 
 app = Flask(__name__)
 api = Api(app)
+
 users = {}
 
 def authenticate():
@@ -27,6 +28,7 @@ class SignUp(Resource):
         password = data.get("password")
         nickname = data.get("nickname", user_id)
         comment = data.get("comment", "")
+
         if not user_id or not password:
             return {"message": "Account creation failed", "cause": "Required user_id and password"}, 400
         if not (6 <= len(user_id) <= 20 and re.match(r"^[A-Za-z0-9]+$", user_id)):
@@ -34,7 +36,8 @@ class SignUp(Resource):
         if not (8 <= len(password) <= 20 and re.match(r"^[A-Za-z0-9!@#$%^&*()_+=-]+$", password)):
             return {"message": "Account creation failed", "cause": "Invalid password"}, 400
         if user_id in users:
-            return {"message": "Account creation failed", "cause": "Already same user_id is used"}, 400
+            return {"message": "Account creation failed", "cause": "User ID already exists"}, 400
+
         users[user_id] = {"password": password, "nickname": nickname, "comment": comment}
         return {"message": "Account successfully created", "user": {"user_id": user_id, "nickname": nickname}}, 200
 
@@ -45,9 +48,10 @@ class GetUser(Resource):
             return {"message": "Authentication failed"}, 401
         if user_id not in users:
             return {"message": "No user found"}, 404
-        user_info = {"user_id": user_id}
-        user_info.update({k: v for k, v in users[user_id].items() if k != "password"})
-        return {"message": "User details by user_id", "user": user_info}, 200
+
+        user_info = users[user_id].copy()
+        del user_info["password"]
+        return jsonify({"message": "User details", "user": user_info}), 200
 
 class UpdateUser(Resource):
     def patch(self, user_id):
@@ -55,12 +59,15 @@ class UpdateUser(Resource):
         if not auth_user:
             return {"message": "Authentication failed"}, 401
         if auth_user != user_id:
-            return {"message": "No permission for update"}, 403
+            return {"message": "Forbidden"}, 403
+
         if user_id not in users:
             return {"message": "No user found"}, 404
+
         data = request.get_json()
         if "user_id" in data or "password" in data:
-            return {"message": "User update failed", "cause": "Not updateble user_id and password"}, 400
+            return {"message": "User update failed", "cause": "Cannot update user_id or password"}, 400
+
         if "nickname" in data:
             if not (1 <= len(data["nickname"]) <= 30):  
                 return {"message": "User update failed", "cause": "Invalid nickname or comment"}, 400
@@ -69,6 +76,7 @@ class UpdateUser(Resource):
             if not (0 <= len(data["comment"]) <= 100):  
                 return {"message": "User update failed", "cause": "Invalid comment"}, 400
             users[user_id]["comment"] = data["comment"]
+
         return {"message": "User successfully updated", "user": users[user_id]}, 200
 
 class DeleteUser(Resource):
@@ -78,8 +86,9 @@ class DeleteUser(Resource):
             return {"message": "Authentication failed"}, 401
         if auth_user not in users:
             return {"message": "User not found"}, 404
+
         del users[auth_user]
-        return {"message": "Account and user successfully removed"}, 200
+        return {"message": "Account and user data deleted"}, 200
 
 api.add_resource(SignUp, "/signup")
 api.add_resource(GetUser, "/users/<string:user_id>")
