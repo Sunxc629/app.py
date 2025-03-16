@@ -36,7 +36,7 @@ class SignUp(Resource):
         if not (8 <= len(password) <= 20 and re.match(r"^[A-Za-z0-9!@#$%^&*()_+=-]+$", password)):
             return {"message": "Account creation failed", "cause": "Invalid password"}, 400
         if user_id in users:
-            return {"message": "Account creation failed", "cause": "User ID already exists"}, 400
+            return {"message": "Account creation failed", "cause": "Already same user_id is used"}, 400
 
         users[user_id] = {"password": password, "nickname": nickname, "comment": comment}
         return {"message": "Account successfully created", "user": {"user_id": user_id, "nickname": nickname}}, 200
